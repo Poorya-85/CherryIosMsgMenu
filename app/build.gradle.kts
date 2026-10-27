@@ -4,44 +4,40 @@ plugins {
 
 android {
     namespace = "com.example.module"
-    compileSdk = 36 // Can be modified as needed
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.module"
         minSdk = 31
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
     }
 
-    lint {
-        targetSdk = 36
-    }
-
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false // برای ماژول‌های Xposed بهتره خاموش باشه تا کدها حذف نشن
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    lint {
-        checkReleaseBuilds = false
-    }
-
-    dependenciesInfo {
-        includeInApk = false
+    // برای اینکه فایل‌های داخل META-INF (مثل java_init.list) در APK قرار بگیرن
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
 dependencies {
-    compileOnly("androidx.annotation:annotation:1.9.1")
-    compileOnly("io.github.libxposed:api")
+    // استفاده از API قدیمی و سازگار با LSPosed
+    compileOnly("de.robv.android.xposed:api:82")
 }
