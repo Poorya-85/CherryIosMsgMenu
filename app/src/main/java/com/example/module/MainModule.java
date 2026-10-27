@@ -8,19 +8,18 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class MainModule implements IXposedHookLoadPackage {
 
-    private static final String TAG = "CherryIOSMenuHook";
+    private static final String TAG = "CherryHook_Debug";
     private static final String TARGET_PACKAGE = "uz.unnarsx.cherrygram";
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        // فقط روی پکیج اصلی Cherrygram کار کن
         if (!lpparam.packageName.equals(TARGET_PACKAGE)) {
             return;
         }
 
-        XposedBridge.log(TAG + ": Loaded in Cherrygram, applying hooks...");
+        XposedBridge.log(TAG + ": 🚀 ماژول با موفقیت در چری‌گرام لود شد.");
 
-        // ۱. دور زدن قفل دونیت (برای فعال شدن آیتم‌های UI)
+        // --- ۱. هک کردن DonateManager ---
         try {
             XposedHelpers.findAndHookMethod(
                     "uz.unnarsx.cherrygram.donates.DonatesManager",
@@ -29,16 +28,17 @@ public class MainModule implements IXposedHookLoadPackage {
                     new XC_MethodReplacement() {
                         @Override
                         protected Object replaceHookedMethod(MethodHookParam param) {
+                            XposedBridge.log(TAG + ": ✅ متد checkAllDonatedAccountsForMarketplace صدا زده شد -> بازگشت True (دور زدن دونیت)");
                             return true;
                         }
                     }
             );
-            XposedBridge.log(TAG + ": Donate check bypassed.");
+            XposedBridge.log(TAG + ": ✅ هوک DonatesManager با موفقیت اعمال شد.");
         } catch (Throwable t) {
-            XposedBridge.log(TAG + ": Failed to hook donate check: " + t.getMessage());
+            XposedBridge.log(TAG + ": ❌ خطا در هوک DonatesManager: " + t.getMessage());
         }
 
-        // ۲. اجبار منوی پیام iOS (Blur) به روشن بودن
+        // --- ۲. هک کردن تنظیمات منوی بلور (iOS) ---
         try {
             XposedHelpers.findAndHookMethod(
                     "uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig",
@@ -47,16 +47,17 @@ public class MainModule implements IXposedHookLoadPackage {
                     new XC_MethodReplacement() {
                         @Override
                         protected Object replaceHookedMethod(MethodHookParam param) {
+                            XposedBridge.log(TAG + ": ✅ متد getBlurMessageMenuBackground صدا زده شد -> بازگشت True");
                             return true;
                         }
                     }
             );
-            XposedBridge.log(TAG + ": BlurMessageMenuBackground forced to true.");
+            XposedBridge.log(TAG + ": ✅ هوک CherrygramMessagesConfig (Blur) با موفقیت اعمال شد.");
         } catch (Throwable t) {
-            XposedBridge.log(TAG + ": Failed to hook getBlurMessageMenuBackground: " + t.getMessage());
+            XposedBridge.log(TAG + ": ❌ خطا در هوک getBlurMessageMenuBackground: " + t.getMessage());
         }
 
-        // ۳. (اختیاری) اجبار Unified Scroll به true برای تجربه iOS کامل‌تر
+        // --- ۳. هک کردن اسکرول یکپارچه ---
         try {
             XposedHelpers.findAndHookMethod(
                     "uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig",
@@ -65,11 +66,14 @@ public class MainModule implements IXposedHookLoadPackage {
                     new XC_MethodReplacement() {
                         @Override
                         protected Object replaceHookedMethod(MethodHookParam param) {
+                            XposedBridge.log(TAG + ": ✅ متد getMsgMenuUnifiedScroll صدا زده شد -> بازگشت True");
                             return true;
                         }
                     }
             );
-            XposedBridge.log(TAG + ": MsgMenuUnifiedScroll forced to true.");
-        } catch (Throwable ignored) {}
+            XposedBridge.log(TAG + ": ✅ هوک CherrygramMessagesConfig (UnifiedScroll) اعمال شد.");
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + ": ❌ خطا در هوک getMsgMenuUnifiedScroll: " + t.getMessage());
+        }
     }
 }
