@@ -1,3 +1,0 @@
-[submodule "libxposed-api"]
-	path = libxposed-api
-	url = https://github.com/libxposed/api
