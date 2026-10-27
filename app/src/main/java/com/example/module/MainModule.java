@@ -1,4 +1,4 @@
-package com.yourname.cherryhook;
+package com.example.module;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodReplacement;
@@ -6,7 +6,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-public class HookMain implements IXposedHookLoadPackage {
+public class MainModule implements IXposedHookLoadPackage {
 
     private static final String TAG = "CherryIOSMenuHook";
     private static final String TARGET_PACKAGE = "uz.unnarsx.cherrygram";
@@ -69,6 +69,7 @@ public class HookMain implements IXposedHookLoadPackage {
                         }
                     }
             );
+            XposedBridge.log(TAG + ": MsgMenuUnifiedScroll forced to true.");
         } catch (Throwable ignored) {}
     }
 }
