@@ -21,7 +21,7 @@ public class MainModule implements IXposedHookLoadPackage {
 
         // --- ۱. دور زدن سیستم دونیت (کلاس 㥿) ---
         try {
-            // نام کلاس در جاوا با کاراکترهای یونیکد نوشته می‌شود
+            // نام کلاس دقیقاً از فایل Smali گرفته شده است
             String donateClassName = "uz.unnarsx.cherrygram.donates.㥿"; 
             Class<?> donateClass = XposedHelpers.findClass(donateClassName, lpparam.classLoader);
 
@@ -56,36 +56,14 @@ public class MainModule implements IXposedHookLoadPackage {
             XposedBridge.log(TAG + ": ❌ خطا در هک کردن کلاس دونیت: " + t.getMessage());
         }
 
-        // --- ۲. هک کردن متد اصلی بررسی دونیت در صفحه تنظیمات ---
+        // --- ۲. هک کردن تنظیمات منوی iOS (در صورت نیاز) ---
+        // (اگر با هک دونیت، منو باز شد، به این بخش نیازی نیست، اما برای اطمینان می‌گذاریم)
         try {
-            String entryClassName = "uz.unnarsx.cherrygram.preferences.DonatesPreferencesEntry";
-            Class<?> entryClass = XposedHelpers.findClass(entryClassName, lpparam.classLoader);
-
-            // ما به برنامه می‌گوییم هر بار که خواست لیست را بسازد (fillItems)، فرض کند کاربر دونیت کرده است
-            XposedHelpers.findAndHookMethod(
-                    entryClass,
-                    "fillItems",
-                    java.util.ArrayList.class,
-                    org.telegram.ui.Components.UniversalAdapter.class, // یا کلاس مشابه
-                    new XC_MethodReplacement() {
-                        @Override
-                        protected Object replaceHookedMethod(MethodHookParam param) {
-                            // اینجا کاری نمی‌کنیم، فقط لاگ می‌دهیم که متد اجرا شده
-                            XposedBridge.log(TAG + ": ✅ متد fillItems در صفحه دونیت اجرا شد.");
-                            return null; // اجازه می‌دهیم کد اصلی اجرا شود اما چون دونیت true است، لیست نمایش داده می‌شود
-                        }
-                    }
-            );
-        } catch (Throwable ignored) {}
-
-        // --- ۳. هک کردن منوی پیام iOS (برای اطمینان) ---
-        try {
-            // در فایل MessageMenuPreferencesEntry، یک متغیر وجود دارد که تعیین می‌کند بلور فعال باشد یا نه
-            // ما مستقیماً متد getBlurMessageMenuBackground را در کلاس تنظیمات هک می‌کنیم
             String configClassName = "uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig";
+            Class<?> configClass = XposedHelpers.findClass(configClassName, lpparam.classLoader);
+            
             XposedHelpers.findAndHookMethod(
-                    configClassName,
-                    lpparam.classLoader,
+                    configClass,
                     "getBlurMessageMenuBackground",
                     new XC_MethodReplacement() {
                         @Override
