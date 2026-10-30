@@ -15,11 +15,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // این خط برای دانلود API قدیمی Xposed اضافه شد
-        maven(url = "https://api.xposed.info/")
+        // این خط برای دانلود کتابخانه API جدید (libxposed) از JitPack اضافه شد
+        maven(url = "https://jitpack.io")
     }
 }
 
 rootProject.name = "CherryIOSMenuModule"
 include(":app")
-// خطوط مربوط به includeBuild و libxposed-compat حذف شدند تا تداخلی پیش نیاید
+// دیگر نیازی به includeBuild("libxposed-api") و include(":libxposed-compat") نیست
