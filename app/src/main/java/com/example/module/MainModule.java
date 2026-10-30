@@ -9,17 +9,19 @@ public class MainModule extends XposedModule {
     private static final String TAG = "CherryHook_Debug";
 
     @Override
-    public void onPackageLoaded(XposedModuleInterface.PackageLoadedParam param) {
+    public void onPackageReady(XposedModuleInterface.PackageReadyParam param) {
         // فقط روی پکیج چری‌گرام کار کن
         if (!param.getPackageName().equals("uz.unnarsx.cherrygram")) {
             return;
         }
 
-        log(4, TAG, "🚀 ماژول در چری‌گرام لود شد (API 102).");
+        log(4, TAG, "🚀 ماژول در چری‌گرام آماده شد (API 102).");
 
         // --- ۱. دور زدن سیستم دونیت (کلاس 㥿) ---
         try {
-            Class<?> donateClass = param.getClassLoader().loadClass("uz.unnarsx.cherrygram.donates.㥿");
+            // استفاده از getDefaultClassLoader() به جای getClassLoader()
+            ClassLoader classLoader = param.getDefaultClassLoader();
+            Class<?> donateClass = classLoader.loadClass("uz.unnarsx.cherrygram.donates.㥿");
 
             // هوک کردن متد ώ (دونیت سطح پایه)
             Executable method1 = donateClass.getDeclaredMethod("ώ");
@@ -42,7 +44,8 @@ public class MainModule extends XposedModule {
 
         // --- ۲. هک کردن تنظیمات منوی iOS (برای اطمینان) ---
         try {
-            Class<?> configClass = param.getClassLoader().loadClass("uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig");
+            ClassLoader classLoader = param.getDefaultClassLoader();
+            Class<?> configClass = classLoader.loadClass("uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig");
             Executable method3 = configClass.getDeclaredMethod("getBlurMessageMenuBackground");
             hook(method3).setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE).intercept(chain -> {
                 log(4, TAG, "✅ متد Blur صدا زده شد -> بازگشت True");
