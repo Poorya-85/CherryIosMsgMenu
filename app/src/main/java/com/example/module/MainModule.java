@@ -1,80 +1,56 @@
 package com.example.module;
 
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import io.github.libxposed.api.XposedInterface;
+import io.github.libxposed.api.XposedModule;
+import io.github.libxposed.api.XposedModuleInterface;
+import java.lang.reflect.Executable;
 
-public class MainModule implements IXposedHookLoadPackage {
-
+public class MainModule extends XposedModule {
     private static final String TAG = "CherryHook_Debug";
-    private static final String TARGET_PACKAGE = "uz.unnarsx.cherrygram";
 
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        if (!lpparam.packageName.equals(TARGET_PACKAGE)) {
+    public void onPackageLoaded(XposedModuleInterface.PackageLoadedParam param) {
+        // فقط روی پکیج چری‌گرام کار کن
+        if (!param.getPackageName().equals("uz.unnarsx.cherrygram")) {
             return;
         }
 
-        XposedBridge.log(TAG + ": 🚀 ماژول در چری‌گرام لود شد.");
+        log(4, TAG, "🚀 ماژول در چری‌گرام لود شد (API 102).");
 
         // --- ۱. دور زدن سیستم دونیت (کلاس 㥿) ---
         try {
-            // نام کلاس دقیقاً از فایل Smali گرفته شده است
-            String donateClassName = "uz.unnarsx.cherrygram.donates.㥿"; 
-            Class<?> donateClass = XposedHelpers.findClass(donateClassName, lpparam.classLoader);
+            Class<?> donateClass = param.getClassLoader().loadClass("uz.unnarsx.cherrygram.donates.㥿");
 
             // هوک کردن متد ώ (دونیت سطح پایه)
-            XposedHelpers.findAndHookMethod(
-                    donateClass,
-                    "ώ",
-                    new XC_MethodReplacement() {
-                        @Override
-                        protected Object replaceHookedMethod(MethodHookParam param) {
-                            XposedBridge.log(TAG + ": ✅ متد ώ() صدا زده شد -> بازگشت True");
-                            return true;
-                        }
-                    }
-            );
+            Executable method1 = donateClass.getDeclaredMethod("ώ");
+            hook(method1).setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE).intercept(chain -> {
+                log(4, TAG, "✅ متد ώ() صدا زده شد -> بازگشت True");
+                return true;
+            });
 
             // هوک کردن متد 㝸 (دونیت VIP)
-            XposedHelpers.findAndHookMethod(
-                    donateClass,
-                    "㝸",
-                    new XC_MethodReplacement() {
-                        @Override
-                        protected Object replaceHookedMethod(MethodHookParam param) {
-                            XposedBridge.log(TAG + ": ✅ متد 㝸() صدا زده شد -> بازگشت True");
-                            return true;
-                        }
-                    }
-            );
-            XposedBridge.log(TAG + ": ✅ سیستم دونیت با موفقیت هک شد.");
+            Executable method2 = donateClass.getDeclaredMethod("㝸");
+            hook(method2).setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE).intercept(chain -> {
+                log(4, TAG, "✅ متد 㝸() صدا زده شد -> بازگشت True");
+                return true;
+            });
 
+            log(4, TAG, "✅ سیستم دونیت با موفقیت هک شد.");
         } catch (Throwable t) {
-            XposedBridge.log(TAG + ": ❌ خطا در هک کردن کلاس دونیت: " + t.getMessage());
+            log(4, TAG, "❌ خطا در هک کردن کلاس دونیت: " + t.getMessage());
         }
 
-        // --- ۲. هک کردن تنظیمات منوی iOS (در صورت نیاز) ---
-        // (اگر با هک دونیت، منو باز شد، به این بخش نیازی نیست، اما برای اطمینان می‌گذاریم)
+        // --- ۲. هک کردن تنظیمات منوی iOS (برای اطمینان) ---
         try {
-            String configClassName = "uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig";
-            Class<?> configClass = XposedHelpers.findClass(configClassName, lpparam.classLoader);
-            
-            XposedHelpers.findAndHookMethod(
-                    configClass,
-                    "getBlurMessageMenuBackground",
-                    new XC_MethodReplacement() {
-                        @Override
-                        protected Object replaceHookedMethod(MethodHookParam param) {
-                            return true;
-                        }
-                    }
-            );
-            XposedBridge.log(TAG + ": ✅ تنظیمات منوی iOS به زور روشن شد.");
+            Class<?> configClass = param.getClassLoader().loadClass("uz.unnarsx.cherrygram.core.configs.CherrygramMessagesConfig");
+            Executable method3 = configClass.getDeclaredMethod("getBlurMessageMenuBackground");
+            hook(method3).setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE).intercept(chain -> {
+                log(4, TAG, "✅ متد Blur صدا زده شد -> بازگشت True");
+                return true;
+            });
+            log(4, TAG, "✅ تنظیمات منوی iOS به زور روشن شد.");
         } catch (Throwable t) {
-            XposedBridge.log(TAG + ": ⚠️ خطا در هک منوی iOS: " + t.getMessage());
+            log(4, TAG, "⚠️ خطا در هک منوی iOS: " + t.getMessage());
         }
     }
 }
